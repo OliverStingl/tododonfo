@@ -1,0 +1,29 @@
+{
+  "short_name": "tododonfo",
+  "name": "tododonfo",
+  "start_url": "https://luna-development.net/tododonfo",
+  "background_color": "#b3ef93",
+  "display": "standalone",
+  "scope": "/tododonfo",
+  "theme_color": "white",
+  "display_override": [
+    "window-controls-overlay"
+  ],
+  "icons": [
+    {
+      "src": "https://luna-development.net/tododonfo/assets/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://luna-development.net/tododonfo/assets/android-chrome-512x512.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "https://luna-development.net/tododonfo/assets/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

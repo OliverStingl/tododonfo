@@ -1,0 +1,217 @@
+body {
+    /*height: 100vh;*/
+}
+
+.container {
+    padding-top: 1em;
+    padding-bottom: 6em;
+}
+
+.brand {
+    margin: 1em 0;
+    opacity: 0.6;
+    text-align: right;
+}
+
+.invisible-input {
+    padding: 2px;
+    border: none;
+    background: transparent;
+    width: 90%;
+}
+
+.todo-card {
+    margin-top: 1em;
+    font-size: 1.4em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    border: 1px solid #0000001a;
+}
+
+.todo-card .card-body {
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.todo-card.done {
+    background-color: #ecfde5;
+}
+
+.todo-card.highlighted {
+    background-color: #fffccc;
+}
+
+.todo-card.postponed {
+    background-color: #dcfbfb;
+}
+
+.todo-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.no-todos-card {
+    margin-top: 1em;
+    text-align: center;
+    border: none;
+    color: lightgrey;
+    background-color: transparent;
+}
+
+.todo-input {
+    font-size: 1.4em;
+}
+
+.fas.action {
+    text-shadow: 1px 1px #0000001a;
+    padding-top: 7px;
+    margin-left: 0.4em;
+}
+
+.fa-check {
+    color: #c0f492;
+}
+
+.fa-arrow-left {
+    color: #f1be70;
+}
+
+.fa-times {
+    color: #f87a7a;
+}
+
+.fa-hand,
+.fa-hourglass {
+    color: #89e9f1;
+}
+
+.fa-hand-point-up {
+    color: red;
+}
+
+.fa-leaf {
+    color: #b3ef93;
+}
+
+.fa-sun,
+.fa-info-circle {
+    color: #fddb56;
+}
+
+.fa-sun {
+    color: #fddb56;
+}
+
+.fa-link {
+    color: blue;
+}
+
+.progressbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0;
+    height: 5px;
+    background-color: #f6c589;
+}
+
+.progress {
+    background-color: #b3ef93;
+}
+
+.brand-logo {
+    display: inline-block;
+    height: 1.2em;
+    padding-bottom: 2px;
+}
+
+.show-done-todos, .show-done-todos * {
+    margin-top: 1em;
+    color: lightgrey;
+    text-align: right;
+    text-decoration: none;
+    font-style: normal;
+}
+
+.list-link {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    background-color: lightgreen;
+    border-radius: 25px;
+    z-index: 999;
+}
+
+.list-link:hover {
+    cursor: pointer;
+    background-color: green;
+    color: white;
+}
+
+.theme-link {
+    position: fixed;
+    bottom: 1em;
+    left: 1em;
+    background-color: white;
+    color: black;
+    border-radius: 25px;
+    z-index: 999;
+}
+
+.theme-link:hover {
+    cursor: pointer;
+    background-color: grey;
+    color: white;
+}
+
+.todo-list-item:hover {
+    background-color: #b3ef93;
+    cursor: pointer;
+}
+
+.current-list {
+    background-color: #f6c589;
+}
+
+.new-list-link {
+    position: fixed;
+    bottom: 1em;
+    background-color: lightgreen;
+    border-radius: 25px;
+}
+
+.new-list-link:hover {
+    cursor: pointer;
+    background-color: green;
+    color: white;
+}
+
+.delete-button:hover {
+    cursor: pointer;
+}
+
+.loading-screen {
+    margin-top: 45vh;
+    text-align: center;
+    height: auto;
+}
+
+.quote-text, .quote-author {
+    font-style: italic;
+    font-family: Serif, serif;
+}
+
+.loading-screen .quote-text {
+    display: inline-block;
+    max-width: 45vw;
+}
+
+.todo-lists-list {
+    min-height: 60vh;
+}
+
+.quote-in-list {
+    padding-bottom: 3em;
+}

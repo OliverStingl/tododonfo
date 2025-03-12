@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=2.0, minimum-scale=1.0">
+    <title>tododonfo</title>
+    <meta name="title" content="tododonfo - Simple todos">
+    <meta name="description" content="don't forget your todos">
+    <meta name="og:image" content="https://luna-development.net/tododonfo/assets/android-chrome-192x192.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css"/>
+</head>
+<body>
+
+<div id="app">
+    <link rel="stylesheet" :href="'https://bootswatch.com/5/'+(themes[currentThemeIndex] ?? 'quartz')+'/bootstrap.min.css'">
+    <link rel="stylesheet" href="app.css">
+
+    <div class="content" v-if="pageLoaded && currentList">
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+            <div class="offcanvas-header">
+                <span class="offcanvas-title" id="menuCanvasLabel"><img src="assets/leaf.png" class="brand-logo" alt=""> tododonfo </span>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body list-list">
+                <div class="mb-3">
+                    <a class="float-end" href="javascript:" v-on:click="sortLists()"><i :class="currentSorting.icon"></i></a>
+                    YOUR LISTS
+                </div>
+                <ul class="list-group todo-lists-list">
+                    <template v-for="list in todoLists">
+                        <li :class="'list-group-item todo-list-item '+(currentList.name === list.name ? 'current-list' : '')" v-on:click="selectList(list)">
+                            <input type="text" v-model="list.name" class="invisible-input">
+                            <a v-if="todoLists.length > 1" href="javascript:" @click="trashList(list.uuid)" class="delete-button"><i class="fas action fa-times"></i></a>
+                        </li>
+                    </template>
+                </ul>
+
+                <div class="col-12 mt-2 quote-in-list" v-if="quote.content">
+                    <p>
+                        <span v-text="quote.content" class="quote-text"></span><br/>
+                        <span class="quote-author float-end" v-text="'~ '+quote.author"></span>
+                    </p>
+                </div>
+                <div class="btn btn-large new-list-link" v-on:click="addNewList()">
+                    <i class="fa fa-plus"></i> New List
+                </div>
+            </div>
+        </div>
+
+        <a class="btn btn-large theme-link" href="javascript:" v-on:click="cycleTheme()"
+           aria-controls="menuCanvas">
+            <i class="fa fa-brush"></i> Theme
+        </a>
+
+        <a class="btn btn-large list-link" data-bs-toggle="offcanvas" href="#menuCanvas" role="button"
+           aria-controls="menuCanvas">
+            <i class="fa fa-list-check"></i> Lists
+        </a>
+
+        <div class="container">
+            <div class="brand">
+                <div>
+                    {{ currentList.name }} <img src="assets/leaf.png" class="brand-logo" alt="">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <form onsubmit="return false">
+                        <input type="text"
+                               v-model="newTodo"
+                               name="new-todo-input"
+                               id="new-todo-input"
+                               v-on:keyup.enter="addTodo($event.ctrlKey)"
+                               placeholder="new todo"
+                               class="form-control todo-input">
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12" v-for="todo in openTodos">
+                    <div :class="'card todo-card '+(todo.highlighted ? 'highlighted' : '')">
+                        <div class="card-body">
+                            <div class="todo-wrapper">
+                                <input type="text" v-model="todo.body" class="invisible-input"
+                                       v-on:keyup="persistData()">
+                                <a v-if="todo.link?.length > 0" :href="todo.link" target="_blank"><i class="ml-2 action fas fa-link"></i></a>
+                                <a href="javascript:" v-on:click="showInfo(todo)"><i class="action fas fa-info-circle"></i></a>
+                                <a href="javascript:" v-on:click="togglePostponeTodo(todo)"><i class="action fas fa-hand"></i></a>
+                                <a href="javascript:" v-on:click="trashTodo(todo.uuid)"><i class="action fas fa-times"></i></a>
+                                <a href="javascript:" v-on:click="toggleTodo(todo)"><i class="action fas fa-check"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" v-if="currentList.todos.length > 0 && openTodos.length === 0">
+                    <div class="card no-todos-card">
+                        <div class="card-body">
+                            no open todos, have a nice day! <i class="fas fa-sun"></i>
+                            <small v-if="postponedTodos.length > 0">
+                                <br/>(don't forget your {{ postponedTodos.length }} postponed
+                                {{ postponedTodos.length > 1 ? 'todos' : 'todo' }}!)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" v-if="currentList.todos.length === 0">
+                    <div class="card no-todos-card">
+                        <div class="card-body">
+                            nothing to do for now ... <i class="fas fa-leaf"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <small class="muted show-done-todos" v-if="postponedTodos.length > 0">
+                    <a href="javascript:" v-on:click="toggleShowPostponed()">
+                        {{ showPostponed ? 'hide' : 'show' }} <span
+                            class="badge rounded-pill bg-warning text-white">{{ postponedTodos.length }}</span> postponed
+                        todos <i :class="'fas fa-arrow-'+(showPostponed ? 'up' : 'down')"></i>
+                    </a>
+                </small>
+                <div class="col-12" v-if="showPostponed" v-for="todo in postponedTodos">
+                    <div class="card todo-card postponed">
+                        <div class="card-body" v-on:contextmenu="togglePostponeTodo(todo); $event.preventDefault()">
+                            <div class="todo-wrapper">
+                                <input type="text"
+                                       v-model="todo.body"
+                                       class="invisible-input text-dark"
+                                       v-on:keyup="persistData()"
+                                       v-on:contextmenu="togglePostponeTodo(todo); $event.preventDefault()">
+                                <a v-if="todo.link?.length > 0" :href="todo.link" target="_blank"><i class="action fas fa-link"></i></a>
+                                <a href="javascript:" v-on:click="togglePostponeTodo(todo)"><i class="action fas fa-hand-point-up"></i></a>
+                                <a href="javascript:" v-on:click="trashTodo(todo.uuid)"><i class="action fas fa-times"></i></a>
+                                <a href="javascript:" v-on:click="toggleTodo(todo)"><i class="action fas fa-check"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <small class="muted show-done-todos" v-if="finishedTodos.length > 0">
+                    <a v-if="showFinished" href="javascript:" style="margin-right: 1em;" v-on:click="clearFinished()">
+                        clear done todos <i
+                            class="fas fa-trash-alt"></i>
+                    </a>
+                    <a href="javascript:" v-on:click="toggleShowFinished()">
+                        {{ showFinished ? 'hide' : 'show' }} done todos <i
+                            :class="'fas fa-arrow-'+(showFinished ? 'up' : 'down')"></i>
+                    </a>
+                </small>
+                <div class="col-12" v-if="showFinished" v-for="todo in finishedTodos">
+                    <div class="card todo-card done">
+                        <div class="card-body" v-on:contextmenu="toggleTodo(todo); $event.preventDefault()">
+                            <div class="todo-wrapper">
+                                <input type="text" v-model="todo.body" class="invisible-input text-dark"
+                                       v-on:contextmenu="toggleTodo(todo); $event.preventDefault()">
+                                <a v-if="todo.link?.length > 0" :href="todo.link" target="_blank"><i class="ml-2 action fas fa-link"></i></a>
+                                <a href="javascript:" @click="trashTodo(todo.uuid)"><i class="fas action fa-times"></i></a>
+                                <a href="javascript:" @click="toggleTodo(todo)"><i class="fas action fa-arrow-left"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="progressbar" v-if="currentList.todos.length > 0">
+            <div class="progress" :style="'width: '+percentFinished+'%'"></div>
+        </div>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="detailViewCanvas" aria-labelledby="detailViewCanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="detailViewCanvasLabel">Details</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body" v-if="detailViewTodo !== null">
+                <fieldset>
+                    <div class="form-group row">
+                        <div class="col-3 text-bold">Content</div>
+                        <div class="col-9" v-text="detailViewTodo.body"></div>
+                    </div>
+                    <div class="form-group row">
+                        <span class="col-3 text-bold">Created</span>
+                        <div class="col-9" v-text="getFormattedDate(detailViewTodo)"></div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-3 text-bold">List</div>
+                        <div class="col-9" v-text="currentList.name"></div>
+                    </div>
+                    <div class="form-group row" v-if="detailViewTodo.link?.length > 0">
+                        <div class="col-3 text-bold">Link</div>
+                        <div class="col-9"><a :href="detailViewTodo.link" target="_blank">Link</a></div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-3 text-bold">Notes</div>
+                        <div class="col-9">
+                            <textarea class="form-control" v-model="detailViewTodo.notes" v-on:keyup="persistData()" style="height: 10em; width: 100%;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row mt-1">
+                        <div class="col-3 text-bold">Link</div>
+                        <div class="col-9">
+                            <input type="text" class="form-control" v-model="detailViewTodo.link" v-on:keyup="persistData()" placeholder="link to your ticket-system, notes, ..."/>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <div class="loading-screen">
+            <div class="row">
+                <div class="col-12">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">.</span>
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
+                    <span>remembering your todos ...</span><br/>
+                </div>
+                <div class="col-12 mt-2" v-if="quote.content">
+                    <p>
+                        <span v-text="quote.content" class="quote-text"></span><br/>
+                        <span class="quote-author" v-text="'~ '+quote.author"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://kit.fontawesome.com/b54a4cceff.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
+<script src="https://unpkg.com/vue@3"></script>
+<script src="app.js"></script>
+</body>
+</html>
